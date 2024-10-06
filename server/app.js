@@ -28,11 +28,11 @@ app.use(express.static("public"));
 
 //! import Routes
 import authRoutes from "./routes/auth.routes.js";
-// import pollRoutes from "./routes/poll.routes.js";
+import pollRoutes from "./routes/poll.routes.js";
 
 //! All Routes
 app.use("/api/v1/users", authRoutes);
-// app.use("/api/v1/poll", pollRoutes);
+app.use("/api/v1/poll", pollRoutes);
 
 //! Error Handler
 // app.use((err, req, res, next) => {
