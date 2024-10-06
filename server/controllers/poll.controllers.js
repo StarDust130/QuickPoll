@@ -71,4 +71,17 @@ const votePoll = async (req, res) => {
   }
 };
 
-export { createPoll, getPoll, votePoll };
+// 📋 Get all polls
+const getAllPolls = async (req, res) => {
+  try {
+    const polls = await Poll.find(); // Fetch all polls from the database
+
+    // ✅ Respond with the fetched polls
+    res.json(polls);
+  } catch (error) {
+    // ⚠️ Handle any errors during fetching polls
+    res.status(500).json({ message: "Error fetching polls", error });
+  }
+};
+
+export { createPoll, getPoll, votePoll, getAllPolls };
