@@ -7,12 +7,7 @@ const app = express(); // Create an Express app
 //! Common Middleware
 
 //? Allow CORS for all routes in the app
-app.use(
-  cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
-  })
-);
+app.use(cors({ origin: "http://localhost:3000" }));
 
 //? Parse cookies from the request headers
 // app.use(cookieParser());
