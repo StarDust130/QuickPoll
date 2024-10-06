@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect, FormEvent } from "react";
+import {  CircleCheckBig, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import axios from "axios";
 
 // Define the Todo type
 interface Todo {
@@ -9,36 +13,33 @@ interface Todo {
   completed: boolean;
 }
 
-// Fetch all todos from the API
+
+
 const fetchTodos = async (): Promise<Todo[]> => {
-  const response = await fetch("http://localhost:3000/api/v1/todo");
-  if (!response.ok) {
+  try {
+    const response = await axios.get("/api/v1/todo");
+    return response.data;
+  } catch (error: any) {
     throw new Error("Failed to fetch todos");
   }
-  return await response.json();
 };
 
-// Create a new todo via the API
 const createTodo = async (todoData: Omit<Todo, "_id">): Promise<Todo> => {
-  const response = await fetch("http://localhost:3000/api/v1/todo/create", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(todoData),
-  });
-  if (!response.ok) {
+  try {
+    const response = await axios.post("/api/v1/todo/create", todoData);
+    return response.data;
+  } catch (error: any) {
     throw new Error("Failed to create todo");
   }
-  return await response.json();
 };
 
+
 const TodoApp = () => {
-  const [todos, setTodos] = useState<Todo[]>([]); // State to hold the list of todos
-  const [title, setTitle] = useState<string>(""); // State to hold the title input
-  const [description, setDescription] = useState<string>(""); // State to hold the description input
-  const [completed, setCompleted] = useState<boolean>(false); // State to hold the completed input
-  const [error, setError] = useState<string | null>(null); // State to handle errors
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [completed, setCompleted] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch todos when the component mounts
   useEffect(() => {
@@ -46,11 +47,10 @@ const TodoApp = () => {
       try {
         const todos = await fetchTodos();
         setTodos(todos);
-      } catch (err: any) {
+      } catch (err) {
         setError(err.message);
       }
     };
-
     fetchAndSetTodos();
   }, []);
 
@@ -63,11 +63,9 @@ const TodoApp = () => {
       setTitle("");
       setDescription("");
       setCompleted(false);
-
-      // Refresh the todo list after creating a new one
       const updatedTodos = await fetchTodos();
       setTodos(updatedTodos);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message);
     }
   };
@@ -95,7 +93,6 @@ const TodoApp = () => {
                 required
               />
             </div>
-
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 Description
@@ -108,7 +105,6 @@ const TodoApp = () => {
                 required
               />
             </div>
-
             <div className="mb-4 flex items-center">
               <input
                 type="checkbox"
@@ -120,7 +116,6 @@ const TodoApp = () => {
                 Mark as Completed
               </label>
             </div>
-
             <button
               type="submit"
               className="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:bg-blue-600 transition"
@@ -128,7 +123,6 @@ const TodoApp = () => {
               Add Todo
             </button>
           </form>
-
           {error && <p className="mt-4 text-red-500">{error}</p>}
         </div>
 
@@ -141,17 +135,32 @@ const TodoApp = () => {
                 <li
                   key={todo._id}
                   className={`p-4 border rounded-lg ${
-                    todo.completed ? "bg-green-100" : "bg-yellow-100"
+                    todo.completed
+                      ? "bg-green-100 line-through"
+                      : "bg-yellow-100"
                   } shadow-md`}
                 >
-                  <h3 className="text-xl font-semibold">{todo.title}</h3>
-                  <p className="text-gray-700">{todo.description}</p>
-                  <p className="text-sm text-gray-500">
-                    Status:{" "}
-                    <span className="font-bold">
-                      {todo.completed ? "Completed" : "Not Completed"}
-                    </span>
-                  </p>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xl font-semibold">{todo.title}</h3>
+                      <p className="text-gray-700">{todo.description}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button>
+                        {todo.completed ? (
+                          <RotateCcw className="text-gray-500" />
+                        ) : (
+                          <CircleCheckBig className="text-green-500" />
+                        )}
+                      </button>
+                      <button>
+                        <Pencil className="text-blue-500" />
+                      </button>
+                      <button>
+                        <Trash2 className="text-red-500" />
+                      </button>
+                    </div>
+                  </div>
                 </li>
               ))
             ) : (
