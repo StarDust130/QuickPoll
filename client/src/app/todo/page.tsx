@@ -47,7 +47,7 @@ const TodoApp = () => {
     title: "",
     description: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // initially true
 
   // Fetch todos on component mount
   useEffect(() => {
@@ -57,6 +57,8 @@ const TodoApp = () => {
         setTodos(fetchedTodos);
       } catch (error: any) {
         setError(`"Failed to load todos" ${error.message}`);
+      } finally {
+        setLoading(false); // Stop loading once data is fetched
       }
     })();
   }, []);
@@ -68,18 +70,18 @@ const TodoApp = () => {
     const newTodo = { title, description, completed };
 
     try {
+      setLoading(true); // Start loading during creation
       await createTodo(newTodo);
-      setLoading(true);
       setTitle("");
       setDescription("");
       setCompleted(false);
 
       const updatedTodos = await fetchTodos();
-      setLoading(false);
-
       setTodos(updatedTodos);
     } catch (err) {
       setError((err as any).message);
+    } finally {
+      setLoading(false); // Stop loading after creation
     }
   };
 
@@ -158,7 +160,7 @@ const TodoApp = () => {
       </form>
 
       {loading ? (
-        <LoadingSpinner />
+        <LoadingSpinner /> // Show loading spinner when data is being fetched
       ) : (
         <ul className="mt-8 w-full max-w-md space-y-4">
           {todos.length > 0 ? (
@@ -247,7 +249,7 @@ const TodoApp = () => {
               </li>
             ))
           ) : (
-            <p className="text-gray-500">No todos available.</p>
+            <p className="text-gray-500">No todos available.</p> // Only show if there are no todos after loading
           )}
         </ul>
       )}
