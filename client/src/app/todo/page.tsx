@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useState, useEffect, FormEvent } from "react";
-import {  CircleCheckBig, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { CircleCheckBig, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import axios from "axios";
 
 // Define the Todo type
@@ -12,8 +12,6 @@ interface Todo {
   description: string;
   completed: boolean;
 }
-
-
 
 const fetchTodos = async (): Promise<Todo[]> => {
   try {
@@ -33,6 +31,21 @@ const createTodo = async (todoData: Omit<Todo, "_id">): Promise<Todo> => {
   }
 };
 
+const deleteTodo = async (todoId: string): Promise<void> => {
+  try {
+    await axios.delete(`/api/v1/todo/${todoId}`);
+  } catch (error: any) {
+    throw new Error("Failed to delete todo");
+  }
+};
+
+const updateTodo = async (todoId: string): Promise<void> => {
+  try {
+    await axios.put(`/api/v1/todo/${todoId}`);
+  } catch (error: any) {
+    throw new Error("Failed to update todo");
+  }
+};
 
 const TodoApp = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -65,6 +78,28 @@ const TodoApp = () => {
       setCompleted(false);
       const updatedTodos = await fetchTodos();
       setTodos(updatedTodos);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDelete = async (todoId: string) => {
+    try {
+      await deleteTodo(todoId);
+      setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== todoId));
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleUpdateTodo = async (todoId: string) => {
+    try {
+      await updateTodo(todoId);
+      setTodos((prevTodos) =>
+        prevTodos.map((todo) =>
+          todo._id === todoId ? { ...todo, completed: !todo.completed } : todo
+        )
+      );
     } catch (err) {
       setError(err.message);
     }
@@ -153,10 +188,10 @@ const TodoApp = () => {
                           <CircleCheckBig className="text-green-500" />
                         )}
                       </button>
-                      <button>
+                      <button onClick={() => handleUpdateTodo(todo._id)}>
                         <Pencil className="text-blue-500" />
                       </button>
-                      <button>
+                      <button onClick={() => handleDelete(todo._id)}>
                         <Trash2 className="text-red-500" />
                       </button>
                     </div>

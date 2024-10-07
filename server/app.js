@@ -12,6 +12,7 @@ app.use(cors());
 //? Parse cookies from the request headers
 // app.use(cookieParser());
 
+
 //? We can accept JSON in the body of the request
 app.use(express.json({ limit: "16kb" }));
 
