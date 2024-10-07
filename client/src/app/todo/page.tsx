@@ -4,6 +4,7 @@
 import { useState, useEffect, FormEvent } from "react";
 import { CircleCheckBig, Pencil, SaveAll, Trash2 } from "lucide-react";
 import axios from "axios";
+import LoadingSpinner from "../components/loading";
 
 // 📝 Todo type definition
 interface Todo {
@@ -46,6 +47,7 @@ const TodoApp = () => {
     title: "",
     description: "",
   });
+  const [loading, setLoading] = useState(false);
 
   // Fetch todos on component mount
   useEffect(() => {
@@ -62,18 +64,22 @@ const TodoApp = () => {
   // Handle form submission for adding a new todo
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
     const newTodo = { title, description, completed };
 
     try {
       await createTodo(newTodo);
+      setLoading(true);
       setTitle("");
       setDescription("");
       setCompleted(false);
 
       const updatedTodos = await fetchTodos();
+      setLoading(false);
+
       setTodos(updatedTodos);
     } catch (err) {
-      setError(err.message);
+      setError((err as any).message);
     }
   };
 
@@ -151,92 +157,100 @@ const TodoApp = () => {
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </form>
 
-      <ul className="mt-8 w-full max-w-md space-y-4">
-        {todos.length > 0 ? (
-          todos.map((todo) => (
-            <li
-              key={todo._id}
-              className={`p-4 flex justify-between items-center bg-white border rounded-lg ${
-                todo.completed ? "line-through text-gray-500" : "text-gray-700"
-              }`}
-            >
-              {editTodoId === todo._id ? (
-                <>
-                  <div className="flex flex-col">
-                    <input
-                      type="text"
-                      className="w-full px-4 py-2 mb-4 border rounded-lg"
-                      placeholder="Edit Title"
-                      value={updatedValue.title}
-                      onChange={(e) =>
-                        setUpdatedValue((prev) => ({
-                          ...prev,
-                          title: e.target.value,
-                        }))
-                      }
-                    />
-                    <input
-                      type="text"
-                      className="w-full px-4 py-2 mb-4 border rounded-lg"
-                      placeholder="Edit Description"
-                      value={updatedValue.description}
-                      onChange={(e) =>
-                        setUpdatedValue((prev) => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button onClick={() => handleUpdate(todo._id)}>
-                      <SaveAll className="text-orange-500" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex flex-col">
-                    <h3 className="font-bold text-lg">{todo.title}</h3>
-                    <p className="text-sm text-gray-600">{todo.description}</p>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        handleToggleComplete(todo._id, todo.completed)
-                      }
-                    >
-                      <CircleCheckBig
-                        className={`text-${
-                          todo.completed ? "gray" : "green"
-                        }-500`}
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <ul className="mt-8 w-full max-w-md space-y-4">
+          {todos.length > 0 ? (
+            todos.map((todo) => (
+              <li
+                key={todo._id}
+                className={`p-4 flex justify-between items-center bg-white border rounded-lg ${
+                  todo.completed
+                    ? "line-through text-gray-500"
+                    : "text-gray-700"
+                }`}
+              >
+                {editTodoId === todo._id ? (
+                  <>
+                    <div className="flex flex-col">
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 mb-4 border rounded-lg"
+                        placeholder="Edit Title"
+                        value={updatedValue.title}
+                        onChange={(e) =>
+                          setUpdatedValue((prev) => ({
+                            ...prev,
+                            title: e.target.value,
+                          }))
+                        }
                       />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditTodoId(todo._id);
-                        setUpdatedValue({
-                          title: todo.title,
-                          description: todo.description,
-                        });
-                      }}
-                    >
-                      <Pencil className="text-blue-500" />
-                    </button>
-                    <button onClick={() => handleDelete(todo._id)}>
-                      <Trash2 className="text-red-500" />
-                    </button>
-                  </div>
-                </>
-              )}
-            </li>
-          ))
-        ) : (
-          <p className="text-gray-500">No todos available.</p>
-        )}
-      </ul>
+                      <input
+                        type="text"
+                        className="w-full px-4 py-2 mb-4 border rounded-lg"
+                        placeholder="Edit Description"
+                        value={updatedValue.description}
+                        onChange={(e) =>
+                          setUpdatedValue((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button onClick={() => handleUpdate(todo._id)}>
+                        <SaveAll className="text-orange-500" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-col">
+                      <h3 className="font-bold text-lg">{todo.title}</h3>
+                      <p className="text-sm text-gray-600">
+                        {todo.description}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          handleToggleComplete(todo._id, todo.completed)
+                        }
+                      >
+                        <CircleCheckBig
+                          className={`text-${
+                            todo.completed ? "gray" : "green"
+                          }-500`}
+                        />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditTodoId(todo._id);
+                          setUpdatedValue({
+                            title: todo.title,
+                            description: todo.description,
+                          });
+                        }}
+                      >
+                        <Pencil className="text-blue-500" />
+                      </button>
+                      <button onClick={() => handleDelete(todo._id)}>
+                        <Trash2 className="text-red-500" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </li>
+            ))
+          ) : (
+            <p className="text-gray-500">No todos available.</p>
+          )}
+        </ul>
+      )}
     </div>
   );
 };
